@@ -6,22 +6,37 @@ export const getAllNotes = async (req, res, next) => {
     const { page = 1, perPage = 10, tag, search } = req.query;
     const skip = (page - 1) * perPage;
 
-    const filter = { userId: req.user._id };
+    // Побудова запиту за допомогою ланцюжка методів Mongoose
+    const notesQuery = Note.find().where('userId').equals(req.user._id);
 
     if (tag) {
-      filter.tag = tag;
+      notesQuery.where('tag').equals(tag);
     }
 
     if (search) {
-      filter.$or = [
+      notesQuery.or([
         { title: { $regex: search, $options: 'i' } },
         { content: { $regex: search, $options: 'i' } },
-      ];
+      ]);
+    }
+
+    // Клонуємо або створюємо окремий запит для підрахунку загальної кількості з тим самим ланцюжком
+    const countQuery = Note.find().where('userId').equals(req.user._id);
+
+    if (tag) {
+      countQuery.where('tag').equals(tag);
+    }
+
+    if (search) {
+      countQuery.or([
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
+      ]);
     }
 
     const [notes, totalNotes] = await Promise.all([
-      Note.find(filter).skip(skip).sort({ createdAt: -1 }).limit(Number(perPage)),
-      Note.countDocuments(filter),
+      notesQuery.skip(skip).sort({ createdAt: -1 }).limit(Number(perPage)),
+      countQuery.countDocuments(),
     ]);
 
     const totalPages = Math.ceil(totalNotes / perPage);
