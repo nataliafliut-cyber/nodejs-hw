@@ -2,32 +2,26 @@ import createHttpError from 'http-errors';
 import { User } from '../models/user.js';
 import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 
-export const updateUserAvatar = async (req, res, next) => {
+export const updateUserAvatarController = async (req, res, next) => {
   try {
-    const file = req.file;
-
-    if (!file) {
-      throw createHttpError(400, 'No file');
+    if (!req.file) {
+      throw createHttpError(400, 'File is missing');
     }
 
-    const uploadResult = await saveFileToCloudinary(file.buffer);
+    const avatarUrl = await saveFileToCloudinary(req.file.buffer, req.user._id);
 
-    const updatedUser = await User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
       req.user._id,
-      { avatar: uploadResult.secure_url },
-      { new: true, runValidators: true },
+      { avatar: avatarUrl },
+      { returnDocument: 'after', runValidators: true },
     );
 
-    if (!updatedUser) {
+    if (!user) {
       throw createHttpError(404, 'User not found');
     }
 
     res.status(200).json({
-      status: 200,
-      message: 'Successfully updated avatar!',
-      data: {
-        url: updatedUser.avatar,
-      },
+      url: user.avatar,
     });
   } catch (error) {
     next(error);
