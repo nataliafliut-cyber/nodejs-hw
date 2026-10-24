@@ -2,7 +2,7 @@ import express from 'express';
 import pino from 'pino-http';
 import cors from 'cors';
 import { env } from './utils/env.js';
-import { initMongoConnection } from './db/initMongoConnection.js';
+import { initMongoConnection } from './db/connectMongoDB.js';
 import notesRoutes from './routes/notesRoutes.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -33,4 +33,9 @@ export const setupServer = () => {
     console.log(`Server is running on port ${PORT}`);
   });
 };
-setupServer();
+const startServer = async () => {
+  await initMongoConnection();
+  setupServer();
+};
+
+startServer();
