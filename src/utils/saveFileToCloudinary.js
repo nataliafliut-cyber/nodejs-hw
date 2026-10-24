@@ -1,7 +1,7 @@
-import cloudinary from 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
 import streamifier from 'streamifier';
 
-cloudinary.v2.config({
+cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
@@ -9,7 +9,7 @@ cloudinary.v2.config({
 
 export const saveFileToCloudinary = async (fileBuffer, userId) => {
   return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.v2.uploader.upload_stream(
+    const uploadStream = cloudinary.uploader.upload_stream(
       {
         resource_type: 'image',
         public_id: userId,
@@ -18,7 +18,7 @@ export const saveFileToCloudinary = async (fileBuffer, userId) => {
       },
       (error, result) => {
         if (error) return reject(error);
-        resolve(result.secure_url);
+        resolve(result);
       },
     );
 

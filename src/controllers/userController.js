@@ -8,11 +8,11 @@ export const updateUserAvatar = async (req, res, next) => {
       throw createHttpError(400, 'File is missing');
     }
 
-    const avatarUrl = await saveFileToCloudinary(req.file.buffer, req.user._id);
+    const uploadResult = await saveFileToCloudinary(req.file.buffer, req.user._id);
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { avatar: avatarUrl },
+      { avatar: uploadResult.secure_url },
       { returnDocument: 'after', runValidators: true },
     );
 

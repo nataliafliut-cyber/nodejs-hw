@@ -9,7 +9,7 @@ import handlebars from 'handlebars';
 import path from 'path';
 import fs from 'fs/promises';
 
-// Rejestracja użytkownika
+// Реєстрація користувача
 export const registerUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -31,10 +31,7 @@ export const registerUser = async (req, res, next) => {
       status: 201,
       message: 'Successfully registered user!',
       data: {
-        user: {
-          name: newUser.name,
-          email: newUser.email,
-        },
+        user: newUser,
       },
     });
   } catch (error) {
@@ -42,7 +39,7 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
-// Logowanie użytkownika
+// Логування користувача
 export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -66,6 +63,7 @@ export const loginUser = async (req, res, next) => {
       message: 'Successfully logged in an user!',
       data: {
         accessToken: session.accessToken,
+        user,
       },
     });
   } catch (error) {
@@ -73,7 +71,7 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
-// Odświeżenie sesji
+// Відśвеження сесії
 export const refreshUserSession = async (req, res, next) => {
   try {
     const { sessionId, refreshToken } = req.cookies;
@@ -90,6 +88,7 @@ export const refreshUserSession = async (req, res, next) => {
       await Session.deleteOne({ _id: sessionId });
       res.clearCookie('sessionId');
       res.clearCookie('refreshToken');
+      res.clearCookie('accessToken');
       throw createHttpError(401, 'Refresh token expired');
     }
 
@@ -110,7 +109,7 @@ export const refreshUserSession = async (req, res, next) => {
   }
 };
 
-// Wylogowanie
+// Вylogowanie
 export const logoutUser = async (req, res, next) => {
   try {
     const { sessionId } = req.cookies;
@@ -134,7 +133,6 @@ export const requestResetEmail = async (req, res, next) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
     
-    // Zawsze zwracamy 200, aby nie ujawniać istnienia emaila w bazie
     if (!user) {
       return res.json({
         status: 200,
