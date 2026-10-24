@@ -26,10 +26,11 @@ export const setupServer = () => {
   app.use(notesRoutes);
 
   app.use(notFoundHandler);
-  app.use(errors()); // Obsługa błędów walidacji Celebrate
+  app.use(errors()); 
   app.use(errorHandler);
 
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
 };
+setupServer();
