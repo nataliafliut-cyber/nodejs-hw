@@ -4,10 +4,9 @@ import { User } from '../models/user.js';
 import { Session } from '../models/session.js';
 import { createSession, setSessionCookies } from '../services/auth.js';
 
-// 1. Реєстрація користувача
 export const registerUser = async (req, res, next) => {
   try {
-    const { email, password, username } = req.body;
+    const { email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -17,7 +16,6 @@ export const registerUser = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
-      username: username || email,
       email,
       password: hashedPassword,
     });
@@ -35,7 +33,6 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
-// 2. Логін користувача
 export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -50,6 +47,9 @@ export const loginUser = async (req, res, next) => {
       throw createHttpError(401, 'Invalid credentials');
     }
 
+    // Видаляємо існуючі сесії користувача перед створенням нової
+    await Session.deleteMany({ userId: user._id });
+
     const session = await createSession(user._id);
     setSessionCookies(res, session);
 
@@ -63,7 +63,6 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
-// 3. Оновлення сесії (Refresh)
 export const refreshUserSession = async (req, res, next) => {
   try {
     const { sessionId, refreshToken } = req.cookies;
@@ -78,6 +77,10 @@ export const refreshUserSession = async (req, res, next) => {
     }
 
     if (new Date() > new Date(session.refreshTokenValidUntil)) {
+      await Session.deleteOne({ _id: sessionId });
+      res.clearCookie('sessionId');
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken');
       throw createHttpError(401, 'Session token expired');
     }
 
@@ -87,14 +90,17 @@ export const refreshUserSession = async (req, res, next) => {
     setSessionCookies(res, newSession);
 
     res.status(200).json({
-      message: 'Session refreshed',
+      status: 200,
+      message: 'Successfully refreshed a session!',
+      data: {
+        accessToken: newSession.accessToken,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
-// 4. Логаут користувача
 export const logoutUser = async (req, res, next) => {
   try {
     const { sessionId } = req.cookies;

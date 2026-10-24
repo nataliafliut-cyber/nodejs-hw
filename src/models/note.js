@@ -32,6 +32,7 @@ const notesSchema = new Schema(
   },
 );
 
-notesSchema.index({ tag: 1 });
+// Складений індекс для userId та tag
+notesSchema.index({ userId: 1, tag: 1 });
 
 export const Note = model('Note', notesSchema);

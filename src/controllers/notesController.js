@@ -19,24 +19,22 @@ export const getAllNotes = async (req, res, next) => {
       ];
     }
 
-    const [notes, totalItems] = await Promise.all([
+    const [notes, totalNotes] = await Promise.all([
       Note.find(filter).skip(skip).sort({ createdAt: -1 }).limit(Number(perPage)),
       Note.countDocuments(filter),
     ]);
 
-    const totalPages = Math.ceil(totalItems / perPage);
+    const totalPages = Math.ceil(totalNotes / perPage);
 
     res.status(200).json({
       status: 200,
       message: 'Successfully found notes!',
       data: {
-        data: notes,
         page: Number(page),
         perPage: Number(perPage),
-        totalItems,
+        totalNotes,
         totalPages,
-        hasNextPage: page < totalPages,
-        hasPreviousPage: page > 1,
+        notes,
       },
     });
   } catch (error) {
@@ -92,7 +90,11 @@ export const deleteNote = async (req, res, next) => {
       throw createHttpError(404, 'Note not found');
     }
 
-    res.status(204).send();
+    res.status(200).json({
+      status: 200,
+      message: 'Successfully deleted a note!',
+      data: deletedNote,
+    });
   } catch (error) {
     next(error);
   }
@@ -104,7 +106,7 @@ export const updateNote = async (req, res, next) => {
     const updatedNote = await Note.findOneAndUpdate(
       { _id: noteId, userId: req.user._id },
       req.body,
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     );
 
     if (!updatedNote) {
