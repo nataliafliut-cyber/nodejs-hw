@@ -7,7 +7,7 @@ import notesRoutes from './routes/notesRoutes.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { errors } from 'celebrate';
-import { logger } from './middleware/logger.js'; 
+import { logger } from './middleware/logger.js';
 
 const PORT = Number(env('PORT', 3000));
 
@@ -16,7 +16,7 @@ export const setupServer = () => {
 
   app.use(express.json());
   app.use(cors());
-  app.use(logger); 
+  app.use(logger);
 
   app.use(notesRoutes);
 
@@ -28,3 +28,15 @@ export const setupServer = () => {
     console.log(`Server is running on port ${PORT}`);
   });
 };
+
+const startServer = async () => {
+  try {
+    await connectMongoDB();
+    setupServer();
+  } catch (error) {
+    console.error('Failed to start the application:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
