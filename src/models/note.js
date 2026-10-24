@@ -6,18 +6,19 @@ const notesSchema = new Schema(
     title: {
       type: String,
       required: true,
-      trim: true, 
+      trim: true,
     },
     content: {
       type: String,
-      required: true,
-      trim: true, 
+      required: false,
+      default: '',
+      trim: true,
     },
     tag: {
       type: String,
       enum: TAGS,
-      default: TAGS[0],
-      required: true,
+      default: 'Todo',
+      required: false,
     },
   },
   {
@@ -28,4 +29,4 @@ const notesSchema = new Schema(
 
 notesSchema.index({ tag: 1 });
 
-export const Note = model('note', notesSchema);
+export const Note = model('Note', notesSchema);
