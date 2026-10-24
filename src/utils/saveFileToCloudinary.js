@@ -13,6 +13,7 @@ export const saveFileToCloudinary = async (fileBuffer, userId) => {
       {
         resource_type: 'image',
         public_id: userId,
+        folder: 'avatars', // Додано обов'язковий параметр folder
         overwrite: true,
         unique_filename: false,
       },
