@@ -2,7 +2,7 @@ import createHttpError from 'http-errors';
 import { User } from '../models/user.js';
 import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 
-export const updateUserAvatarController = async (req, res, next) => {
+export const updateUserAvatar = async (req, res, next) => {
   try {
     if (!req.file) {
       throw createHttpError(400, 'File is missing');
